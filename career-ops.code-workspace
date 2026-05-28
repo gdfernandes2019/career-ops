@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.fontSize": 13,
+		"editor.fontFamily": "psudoFont Liga Mono",
+		"editor.fontWeight": "700",
+		"editor.fontLigatures": true,
+	}
+}
