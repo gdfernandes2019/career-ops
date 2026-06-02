@@ -7,7 +7,7 @@
 
 ## Resumo Profissional
 
-Consultor Salesforce Sênior com mais de 10 anos de experiência em serviços financeiros, energia e utilities, e consultoria corporativa. Experiência em produção com Salesforce Financial Services Cloud, Service Cloud e Sales Cloud no C6 Bank, desenvolvendo Apex, Flows, LWC e integrações REST/SOAP entre o Salesforce e sistemas core bancários. Atuação em nível de arquitetura no GFT Group em programas Salesforce multi-cloud. Forte em modelagem de dados, objetos customizados, Permission Sets, OAuth, JSON e design de integrações síncronas/assíncronas.
+Consultor Salesforce Sênior com mais de 25 anos em TI corporativa, combinando entrega técnica com histórico como Product Owner e Gerente de Projetos em programas Salesforce de grande porte. Experiência em produção com Salesforce FSC, Service Cloud e Sales Cloud no C6 Bank, desenvolvendo Apex, Flows, LWC e integrações REST/SOAP. Atuação em nível de arquitetura no GFT Group em programas multi-cloud. Atuação como PO e PM na Deloitte em clientes globais como Roche (setor de saúde chileno) e BD Brasil. Experiência como ponte entre negócio e tecnologia na everis/Itaú — escrita de especificações funcionais e técnicas entre áreas de negócio e o time Salesforce. Entregas internacionais no Brasil, Chile, México, Tanzânia e Índia.
 
 ## Competências Principais
 
@@ -19,6 +19,9 @@ Consultor Salesforce Sênior com mais de 10 anos de experiência em serviços fi
 - Modelagem de Dados & Objetos Customizados
 - OAuth, JSON, Webhooks
 - Permission Sets & Segurança
+- Product Ownership & Gestão de Backlog
+- Escrita de Especificações Funcionais e Técnicas
+- Gestão de Stakeholders (ponte negócio ↔ tecnologia)
 
 ## Experiência Profissional
 
@@ -31,7 +34,7 @@ jan 2026 - Atual
 
 ### HCLTech -- São Paulo, Brasil
 **Desenvolvedor Salesforce Sênior**
-mai 2024 - abr 2025
+dez 2024 - nov 2025
 
 - Construí integrações de API REST (síncronas e assíncronas) entre o Salesforce e serviços externos para funcionalidades financeiras core.
 - Apex, Flow, LWC, Omni Integration Procedures e Omni Data Mappers em jornadas de atendimento ao cliente multicanal.
@@ -78,14 +81,18 @@ mai 2020 - ago 2021
 ago 2015 - fev 2020
 
 - Consultoria Salesforce ponta a ponta em contas estratégicas.
+- Banco Itaú (2017): responsável pela escrita de especificações funcionais e técnicas para Sales/Service Cloud e integrações REST consumidas pelo Salesforce, atuando como ponte entre as áreas de negócio e o time técnico; posteriormente assumiu também o desenvolvimento na mesma conta.
+- AB-InBev: liderou customização e rollout de managed package Salesforce para México, Tanzânia e Índia, coordenando com times locais e com o Salesforce Architect global da AB-InBev; entregou um MVP de Einstein Vision para o Grupo Modelo (México) como desenvolvedor responsável pela iniciativa.
 - Enel (Energia e Utilities): implementação Salesforce com CPQ Bit2Win, processos de atendimento ao cliente e integração com sistema de faturamento.
 
 ### Deloitte Brasil -- São Paulo, Brasil
-**Consultor Sênior**
+**Consultor Sênior / Gerente de Projetos**
 2000 - 2015
 
+- Roche / Ministério da Saúde do Chile (2014): Product Owner em plataforma governamental de gestão de licitações públicas de saúde para o Chile, coordenando requisitos entre a autoridade pública e o time de entrega.
+- BD (Becton Dickinson) Brasil: Gerente de Projetos e líder do time Deloitte em programa de implementação tecnológica.
 - Comgás (Energia e Utilities): integração do CRM Vantive com o Cordaptix (Oracle) para operações de atendimento ao cliente na distribuição de gás.
-- Início: Trainee e depois Consultor na prática de Consultoria da Deloitte, atuando em múltiplos setores.
+- Progressão de Trainee → Consultor → Consultor Sênior em múltiplos setores na prática de Consultoria da Deloitte.
 
 ## Formação Acadêmica
 
