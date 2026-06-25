@@ -5,9 +5,9 @@
 		}
 	],
 	"settings": {
-		"editor.fontSize": 13,
+		"editor.fontSize": 14,
 		"editor.fontFamily": "psudoFont Liga Mono",
-		"editor.fontWeight": "700",
+		"editor.fontWeight": "500",
 		"editor.fontLigatures": true,
 	}
 }
