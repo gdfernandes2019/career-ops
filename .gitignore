@@ -99,3 +99,6 @@ package-lock.json
 
 # Planning (local scratchpad)
 plan/
+
+# Trello sync map (regenerable via `manage-trello-board link`; holds board/card ids, machine-local)
+*.board.sync.json
