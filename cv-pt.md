@@ -45,6 +45,7 @@ dez 2024 - nov 2025
 out 2023 - nov 2024
 
 - Engenharia de software em sistemas de escala corporativa, com foco em fluxo de dados e padrões de integração.
+- Utilizei Copado para CI/CD e release management no Salesforce: versionamento, deploys automatizados e promoção de ambientes.
 
 ### Provider IT -- São Paulo, Brasil
 **Engenheiro de Software MuleSoft**
@@ -102,6 +103,7 @@ ago 2015 - fev 2020
 
 ## Certificações
 
+- Salesforce Certified Platform Developer I -- Salesforce
 - Salesforce Certified Service Cloud Consultant -- Salesforce
 - Salesforce Certified Administrator -- Salesforce
 - Salesforce Certified Sales Cloud Consultant -- Salesforce
@@ -112,5 +114,5 @@ ago 2015 - fev 2020
 
 - **Salesforce:** FSC, Service Cloud, Sales Cloud, Apex, SOQL, LWC, Flows, Permission Sets, Objetos Customizados, Lightning Experience
 - **Integrações:** REST, SOAP, OAuth, JSON, Webhooks, Síncrono/Assíncrono, Omni Integration Procedures, MuleSoft
-- **Ferramentas:** PMD, SonarQube, Git, JIRA, Bitbucket, GitLab
+- **CI/CD & Ferramentas:** Copado, Git, Bitbucket, GitLab, PMD, SonarQube, JIRA
 - **Idiomas:** Português (nativo), Inglês (profissional), Espanhol (profissional)
