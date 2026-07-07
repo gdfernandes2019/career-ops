@@ -1,0 +1,219 @@
+# study-plan.board.yml — lean, editable source for the Trello board.
+#
+# Synced with Trello via the `manage-trello-board` skill:
+#   node ~/.claude/skills/manage-trello-board/trello-board.mjs push   # this file -> Trello
+#   node ~/.claude/skills/manage-trello-board/trello-board.mjs pull   # Trello -> this file
+#
+# Rules of the road:
+#   - `id` (A1, M0, …) is the stable key. Don't reuse one. It maps to a Trello
+#     card via study-plan.board.sync.json (auto-managed — don't hand-edit that).
+#   - `list` is the card's status (which Trello list it sits in). `push` moves
+#     the card to match this; `pull` rewrites it to match Trello.
+#   - Checklist items carry their checked state inline: "[ ]" todo, "[x]" done.
+#   - Delete a card here + `push`  => it gets ARCHIVED on Trello (recoverable).
+#   - Add/check items in Trello + `pull` => they show up here.
+#
+# Prose, narrative, and the "why" live in study-plan-salesforce-mulesoft.md.
+# This file is just the board's moving parts.
+
+board: "Re-entry — Salesforce + MuleSoft"
+
+# Visual left-to-right order of the Kanban lists.
+lists:
+  - "📥 Backlog"
+  - "📅 This Week"
+  - "🔨 In Progress"
+  - "✅ Done"
+  - "🏆 Artifacts"
+
+# label name -> Trello color
+labels:
+  Salesforce: blue
+  MuleSoft: green
+  Low-energy OK: yellow
+
+cards:
+  # ---------------- Track A — Salesforce superbadges ----------------
+  - id: A1
+    list: "📅 This Week"
+    title: "Apex Specialist (superbadge)"
+    labels: [Salesforce]
+    desc: >-
+      First superbadge. Theme: HowWeRoll maintenance/inventory. Refreshes
+      triggers, async Apex, REST callouts, test classes. Search exact name on
+      trailhead.salesforce.com.
+    checklists:
+      Prerequisite badges:
+        - "[ ] Object-Oriented Programming in Apex"
+        - "[ ] Apex Triggers"
+        - "[ ] Asynchronous Apex"
+        - "[ ] Apex Integration Services"
+        - "[ ] Apex Testing"
+      Challenge steps:
+        - "[ ] Automate record creation (trigger)"
+        - "[ ] Synchronize Salesforce data with external system (callout)"
+        - "[ ] Schedule synchronization (Scheduled/Queueable Apex)"
+        - "[ ] Test automation logic (test class)"
+        - "[ ] Test callout logic (mock callout)"
+
+  - id: A2
+    list: "📥 Backlog"
+    title: "Process Automation Specialist (superbadge)"
+    labels: [Salesforce, Low-energy OK]
+    desc: >-
+      Second — the Flow/process-automation superbadge. Lightest of the three;
+      good momentum win. Record-triggered + screen Flows, approvals, validation.
+    checklists:
+      Prerequisite badges:
+        - "[ ] Formulas & Validations"
+        - "[ ] Build Flows with Flow Builder"
+        - "[ ] Approve Records with Approval Processes"
+        - "[ ] Flow (Lightning Flow) fundamentals"
+      Challenge steps:
+        - "[ ] Automate account/opportunity setup"
+        - "[ ] Build a screen flow for guided input"
+        - "[ ] Configure an approval process"
+        - "[ ] Add validation + formula logic"
+        - "[ ] Add scheduled/record-triggered automation"
+
+  - id: A3
+    list: "📥 Backlog"
+    title: "Lightning Web Components Specialist (superbadge)"
+    labels: [Salesforce]
+    desc: >-
+      Third — the Lightning UI superbadge. Heaviest; save for when momentum is
+      built. Closes the JavaScript Developer I soft-gap with a portfolio artifact
+      instead of an exam.
+    checklists:
+      Prerequisite badges:
+        - "[ ] Lightning Web Components Basics"
+        - "[ ] Lightning Data Service"
+        - "[ ] Lightning Web Components & Salesforce Data"
+        - "[ ] LWC Testing with Jest"
+      Challenge steps:
+        - "[ ] Build the base LWC component(s)"
+        - "[ ] Wire component to Apex (@wire)"
+        - "[ ] Handle events / navigation"
+        - "[ ] Use Lightning Data Service"
+        - "[ ] Write Jest unit tests"
+
+  # ---------------- Track B — MuleSoft "Wanderlust Travel" ----------------
+  - id: M0
+    list: "📅 This Week"
+    title: "Setup (just open the tools)"
+    labels: [MuleSoft, Low-energy OK]
+    desc: "Trivial on purpose. Goal: tools open, nothing more."
+    checklists:
+      Tasks:
+        - "[ ] Install Anypoint Studio (free desktop IDE)"
+        - "[ ] Start 30-day Anypoint Platform trial"
+        - "[ ] Open DataWeave Playground (dataweave.mulesoft.com)"
+        - "[ ] Get a free Amadeus Self-Service API key"
+        - "[ ] Spin up local MySQL: customers + hotels + bookings schema"
+
+  - id: M1
+    list: "📥 Backlog"
+    title: "Design (API-first / RAML)"
+    labels: [MuleSoft]
+    desc: "Lifecycle skill: API-first design + mocking."
+    checklists:
+      Tasks:
+        - "[ ] Write RAML for /flights, /hotels, /bookings in Design Center"
+        - "[ ] Publish specs to Exchange"
+        - "[ ] Enable the mocking service and try a sample call"
+
+  - id: M2
+    list: "📥 Backlog"
+    title: "Build System APIs"
+    labels: [MuleSoft]
+    desc: "Lifecycle skill: connectors, APIkit scaffolding."
+    checklists:
+      Tasks:
+        - "[ ] /hotels — Database connector to local MySQL"
+        - "[ ] /flights — HTTP connector to Amadeus (handle OAuth token)"
+        - "[ ] /crm — Salesforce connector creating a record in the Track-A org"
+        - "[ ] Scaffold flows from RAML with APIkit"
+
+  - id: M3
+    list: "📥 Backlog"
+    title: "Transform (DataWeave)"
+    labels: [MuleSoft]
+    desc: "Lifecycle skill: DataWeave 2.0, canonical data model."
+    checklists:
+      Tasks:
+        - "[ ] Define a canonical Trip model"
+        - "[ ] Map Amadeus flight JSON -> Trip"
+        - "[ ] Map DB hotel rows -> Trip"
+        - "[ ] Prototype each transform in DataWeave Playground first"
+
+  - id: M4
+    list: "📥 Backlog"
+    title: "Orchestrate (Process API)"
+    labels: [MuleSoft]
+    desc: "Lifecycle skill: orchestration, parallel calls, routing."
+    checklists:
+      Tasks:
+        - "[ ] Build /trip-orchestration Process API"
+        - "[ ] Scatter-Gather to /flights and /hotels in parallel"
+        - "[ ] Assemble a quoted trip"
+        - "[ ] On confirm -> call /crm to log the booking in Salesforce"
+
+  - id: M5
+    list: "📥 Backlog"
+    title: "Resilience & error handling"
+    labels: [MuleSoft, Low-energy OK]
+    desc: "Lifecycle skill: reliability patterns."
+    checklists:
+      Tasks:
+        - "[ ] Add try / error-handler scopes"
+        - "[ ] Until-Successful retry on the Amadeus call"
+        - "[ ] Custom error type for 'no availability'"
+
+  - id: M6
+    list: "📥 Backlog"
+    title: "Test (MUnit)"
+    labels: [MuleSoft]
+    desc: "Lifecycle skill: automated testing, mocking external systems."
+    checklists:
+      Tasks:
+        - "[ ] MUnit tests for each System API"
+        - "[ ] MUnit test for the Process API"
+        - "[ ] Mock the Amadeus and Salesforce connectors"
+
+  - id: M7
+    list: "📥 Backlog"
+    title: "Deploy & secure"
+    labels: [MuleSoft]
+    desc: "Lifecycle skill: deployment + API governance."
+    checklists:
+      Tasks:
+        - "[ ] Deploy the Experience API to CloudHub (trial)"
+        - "[ ] Apply an API Manager policy: client-ID enforcement"
+        - "[ ] Add a rate-limiting policy"
+
+  - id: M8
+    list: "📥 Backlog"
+    title: "Close the loop (the payoff demo)"
+    labels: [MuleSoft, Salesforce]
+    desc: >-
+      Booking flows web -> MuleSoft -> the SAME Salesforce org from Track A.
+      Both tracks become one demo.
+    checklists:
+      Tasks:
+        - "[ ] Booking lands as Opportunity/Case in the Track-A Dev org"
+        - "[ ] A2 Flow automation routes the new record"
+        - "[ ] A3 LWC displays the booking"
+        - "[ ] Record a 2–3 min end-to-end demo"
+
+  # ---------------- Artifacts ----------------
+  - id: proof
+    list: "🏆 Artifacts"
+    title: "Proof to keep (CV + interviews)"
+    labels: [Salesforce, MuleSoft]
+    desc: "The tangible output of all this work."
+    checklists:
+      Artifacts:
+        - "[ ] 3 superbadge links on public Trailhead profile"
+        - "[ ] Wanderlust Travel repo (RAML, flows, DataWeave, MUnit, README + diagram)"
+        - "[ ] 2–3 min screen-recorded end-to-end demo"
+        - "[ ] STAR story added to interview-prep/story-bank.md"
