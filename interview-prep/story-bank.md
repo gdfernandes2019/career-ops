@@ -96,3 +96,39 @@ This file accumulates your best interview stories over time. Each evaluation (Bl
 **R (Result):** Working end-to-end configure-price-quote flow in production; customer service agents generated quotes and managed billing without leaving Salesforce.
 **Reflection:** CPQ projects need a dedicated data modeling phase before configuration begins — skip it and the pricing logic becomes unmaintainable as rules multiply. I now front-load a product catalog design workshop before any CPQ build.
 **Best for questions about:** CPQ, quote-to-cash, billing integration, Salesforce CPQ, configure-price-quote, ERP integration, Energy & Utilities
+
+### [Omni Integration / Agentic Orchestration] HCLTech: Omni Integration Procedures for Multi-Channel Financial Services
+**Source:** Report #032 — Grupo SysMap — Desenvolvedor Salesforce Senior - IA Developer
+**S (Situation):** At HCLTech (working with C6 Bank), a digital bank needed to unify customer service journeys across multiple channels — each backed by different external systems — into a single Salesforce-powered experience.
+**T (Task):** Build the integration and orchestration layer that pulled data from external services and composed it into a coherent experience for agents, using Salesforce's native orchestration tooling.
+**A (Action):** Built REST API integrations (sync and async) between Salesforce and external services; used Omni Integration Procedures for multi-step orchestration and Omni Data Mappers for response transformation across multi-channel customer support journeys.
+**R (Result):** Delivered a unified customer service experience where agents saw complete, real-time external system data without leaving Salesforce; reduced context-switching for support agents across channels.
+**Reflection:** Omni Integration Procedures are the closest native Salesforce pattern to what Agentforce Actions do — they orchestrate multi-step processes by calling external systems, transforming responses, and routing results. This experience directly maps to Agentforce implementation patterns.
+**Best for questions about:** Omni Integration Procedures, Omni Data Mappers, multi-channel orchestration, Agentforce-adjacent patterns, financial services, service cloud, complex integrations
+
+### [Legacy Integration / BSS-OSS Analogue] Comgás: CRM-to-Billing System Integration
+**Source:** Report #031 — Confidencial via Leme Recruiting (Everymind) — Analista Desenvolvedor Salesforce Sênior
+**S (Situation):** At Deloitte, Comgás (gas distribution utility) needed its Vantive CRM to exchange customer and billing data with Cordaptix (Oracle) — a legacy billing and field-service system — to enable end-to-end customer service operations.
+**T (Task):** Design and implement the integration layer between the CRM and the billing system so customer service agents could access contract, billing, and service order data without switching systems.
+**A (Action):** Designed and built the CRM-to-billing integration at Deloitte: mapped data contracts between Vantive and Cordaptix, built the synchronization layer handling customer records, billing events, and service orders, and tested under production-equivalent conditions with the Comgás operations team.
+**R (Result):** Integration went live and remained in production for years after handover; customer service agents had a unified view of billing and service data directly from CRM.
+**Reflection:** Legacy billing system integrations (BSS/OSS in Telecom, core banking in Fintech, Cordaptix in E&U) follow the same architecture pattern: REST/event-driven sync with stateful retry logic and data transformation. Domain acronyms differ; the integration design does not. Entering a new vertical earlier with a domain glossary session would accelerate mapping.
+**Best for questions about:** BSS/OSS-equivalent integrations, legacy system connectivity, CRM-to-billing integration, utilities industry, data transformation, Telecom adjacency
+
+### [Data Governance] C6 Bank: Data Model Ownership on FSC
+**Source:** Report #033 — Riveron — Salesforce Technical Architect
+**S (Situation):** At C6 Bank, one of Brazil's largest digital banks, the Financial Services Cloud implementation needed a complete custom data model — and every design decision (object types, relationship cardinality, sharing rules, permissions) was permanent once data entered production.
+**T (Task):** Own all data-model decisions for the FSC implementation: custom objects, lookup vs master-detail trade-offs, sharing rules for compliance, and Permission Sets for role-based access.
+**A (Action):** Evaluated the rollup and cascade implications of each relationship type before committing; defined sharing rules aligned to banking compliance requirements; designed Permission Sets that mapped to product roles without granting over-privilege; documented every decision with the rationale for the team.
+**R (Result):** No data model rework in production; the team could extend the model safely in later sprints because the foundation was documented and principled.
+**Reflection:** These decisions are irreversible — a master-detail chosen for rollup convenience becomes a blocker if you later need to reparent records. I now prototype rollup behavior and test sharing rules in a scratch org before committing any relationship design.
+**Best for questions about:** data governance, data modeling, FSC, security and sharing, architecture ownership, permanent design decisions, Financial Services Cloud
+
+### [Business-Tech Bridge] everis / Banco Itaú: Spec Writer Who Also Ships Code
+**Source:** Report #030 — FCamara — Pessoa Desenvolvedora Salesforce - Sênior
+**S (Situation):** At everis on the Banco Itaú account, business stakeholders and the Salesforce development team were struggling to communicate requirements clearly — the business used banking terms, the dev team spoke platform-first. Both sides were misaligned on what the Sales Cloud and Service Cloud integration with core banking systems should do.
+**T (Task):** Act as the bridge: write functional and technical specifications that both sides could use, then later take on development responsibilities on the same program.
+**A (Action):** Ran stakeholder interviews with business areas to capture banking workflow requirements; translated those into Salesforce-native functional specs (object model, field logic, integration contracts) and technical specs (REST API contracts, trigger behavior, test cases); later joined the dev squad and built features to the same specs I had written.
+**R (Result):** Full business sign-off on specifications before any code was written; the program delivered on schedule with zero major scope disputes during development — because the dev team was building from specs they trusted.
+**Reflection:** Writing the spec and then building to it is the best way to understand both sides. The discipline of writing a precise REST contract before the integration is built saves weeks of debugging later. I now insist on a spec-first step even on small integrations.
+**Best for questions about:** business-tech bridge, functional specs, technical specs, stakeholder management, discovery, requirements gathering, Salesforce consulting, financial services
