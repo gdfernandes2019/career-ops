@@ -27,7 +27,7 @@ There are two layers. Read `DATA_CONTRACT.md` for the full list.
 
 ## Source-of-Truth Boundary (CRITICAL)
 
-User-facing content (CV, cover letters, form answers, recruiter outreach, application form responses) is generated **exclusively** from these files plus statements the user makes directly in the current conversation:
+User-facing content (CV, cover letters, application emails, form answers, recruiter outreach, application form responses) is generated **exclusively** from these files plus statements the user makes directly in the current conversation:
 
 - `cv.md`
 - `article-digest.md`
@@ -103,7 +103,13 @@ AI-powered job search automation built on Claude Code: pipeline tracking, offer 
 | `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
 | `interview-prep/{company}-{role}.md` | Company-specific interview intel reports |
 | `analyze-patterns.mjs` | Pattern analysis script (JSON output). Includes ATS channel analysis (per-vendor advance rate; motivated by Bommasani et al., Algorithmic Monocultures in Hiring, FAccT 2026). |
+| `stats.mjs` | Lifetime pipeline stats aggregator (JSON or `--summary`) — tracker roll-up, canonical `ever*` funnel, lifetime scan totals, portal coverage, follow-up compliance, scan-run trends |
+| `data/scan-runs.tsv` | Per-run scan counters (appended by `scan.mjs`, read by `stats.mjs`) |
 | `followup-cadence.mjs` | Follow-up cadence calculator (JSON output) |
+| `followup-seed.mjs` | Seeds `data/follow-ups.md` with a pinned first follow-up date when a row turns Applied (JSON output) |
+| `set-status.mjs` | Canonical CLI to update a tracker row: `node set-status.mjs <report#\|company> <State> [--note]` — strict states.yml validation, shared tracker lock, atomic write |
+| `salary-gap.mjs` | Desired/advertised/actual compensation gap analyzer — folds report `advertised_comp` + `data/salary-observations.tsv` (JSON or `--summary`) |
+| `data/salary-observations.tsv` | Append-only salary observation log (user layer) |
 | `data/follow-ups.md` | Follow-up history tracker |
 | `scan.mjs` | Zero-token portal scanner — hits Greenhouse/Ashby/Lever APIs directly, zero LLM cost |
 | `check-liveness.mjs` | Job posting liveness checker |
@@ -129,6 +135,7 @@ You can invoke the command center or any of its modes directly within your CLI:
 * `pdf` — Generate ATS-optimized CV PDF
 * `latex` — Export CV as LaTeX/Overleaf .tex
 * `cover` — Generate cover letter
+* `email` — Draft formal application email only; never sends, submits, or clicks
 * `interview-prep` — Generate interview preparation guide
 * `interview` — Onboarding/on-demand interview
 * `contacto` — Generate LinkedIn outreach message
@@ -137,6 +144,8 @@ You can invoke the command center or any of its modes directly within your CLI:
 * `project` — Evaluate portfolio project idea
 * `batch` — Run parallel batch evaluations
 * `patterns` — Analyze rejection patterns
+* `offer-prep` — Read a received offer/contract with the candidate: clause walk + lawyer questions (not legal advice)
+* `titles` — Suggest adjacent job titles from your CV to broaden the search
 * `followup` — Update and calculate follow-ups
 * `update` — Update system files
 
@@ -246,10 +255,11 @@ Default modes are in `modes/` (English). Language-specific modes live in `modes/
 | German | `modes/de/` | DACH (Germany, Austria, Switzerland) |
 | French | `modes/fr/` | France, Belgium, Switzerland, Luxembourg, Quebec |
 | Japanese | `modes/ja/` | Japan |
+| Hindi | `modes/hi/` | India |
 
 **When to use a `{lang}` mode** — if any holds: the user says "use {lang} modes"; `config/profile.yml` sets `language.modes_dir: modes/{lang}`; or you detect a {lang} JD (then suggest switching). Read from `modes/{lang}/` instead of `modes/`.
 
-**When NOT to:** if the user applies to English-language roles — even at French, German, or Japanese companies — use the default English modes.
+**When NOT to:** if the user applies to English-language roles — even at French, German, Japanese, or Indian companies — use the default English modes.
 
 ### Skill Modes
 
@@ -259,6 +269,7 @@ Default modes are in `modes/` (English). Language-specific modes live in `modes/
 | Asks to evaluate offer | `oferta` |
 | Asks to compare offers | `ofertas` |
 | Wants LinkedIn outreach | `contacto` |
+| Wants a formal application email | `email` — draft-only; never sends, submits, or clicks anything |
 | Asks for company research | `deep` |
 | Preps for interview at specific company | `interview-prep` |
 | Wants interactive profile/CV onboarding | `interview` |
@@ -273,7 +284,9 @@ Default modes are in `modes/` (English). Language-specific modes live in `modes/
 | Searches for new offers | `scan` |
 | Processes pending URLs | `pipeline` |
 | Batch processes offers | `batch` |
-| Asks about rejection patterns or wants to improve targeting | `patterns` |
+| Asks about rejection patterns, wants to improve targeting, or wants to match interview answers to best-fit roles | `patterns` |
+| Receives an offer/contract and wants help understanding it before signing | `offer-prep` — clause walk with neutral tags + lawyer question list; describes, never judges; no verdicts, no online research; optional draft-only negotiation reply email from the "Items to raise" list |
+| Wants to broaden the search with adjacent job titles suggested from the CV | `titles` |
 | Asks about follow-ups or application cadence | `followup` |
 
 ### CV Source of Truth
@@ -355,12 +368,14 @@ Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slu
 
 **Note:** In applications.md, score comes BEFORE status. The merge script handles this column swap automatically.
 
+**Optional Via field (#1596):** when the application goes through an agency/recruiter, append a **tagged** extra field `via={Agency}` (e.g. `via=Hays`) after notes — never a positional slot; the tag is mandatory. A single untagged extra field keeps its legacy meaning (location). Unknown end employer → write `?` as company (locale-invariant structural marker — never the word "Confidential") plus a distinguishing descriptor in notes. `merge-tracker.mjs` rejects ambiguous extras loudly, and `--migrate-via` adds the Via column to an existing tracker.
+
 **Report link normalization:** The TSV always carries a **root-relative** `[num](reports/...)` link. `merge-tracker.mjs` rewrites it so the link is relative to the tracker file's own directory before writing it into the tracker — `../reports/...` when the tracker is at `data/applications.md`, or `reports/...` at the root layout. This keeps links clickable from the tracker (markdown links resolve relative to the file that contains them). Normalization is idempotent. To fix links in an existing tracker, run `node merge-tracker.mjs --migrate` (see #760).
 
 ### Pipeline Integrity
 
 1. **NEVER edit applications.md to ADD new entries** -- Write TSV in `batch/tracker-additions/` and `merge-tracker.mjs` handles the merge.
-2. **YES you can edit applications.md to UPDATE status/notes of existing entries.**
+2. **UPDATE status/notes of existing entries via `node set-status.mjs <report#|company> <State> [--note]`** — the canonical (locked, validated, atomic) write path. Do not hand-edit the table.
 3. All reports MUST include `**URL:**` in the header (between Score and PDF). Include `**Legitimacy:** {tier}` (see Block G in `modes/oferta.md`).
 4. All statuses MUST be canonical (see `templates/states.yml`).
 5. Health check: `node verify-pipeline.mjs`
@@ -374,142 +389,3 @@ Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slu
 **RULES:** no markdown bold (`**`), no dates (those go in the date column), no extra text (use the notes column) in the status field.
 @AGENTS.md
 <!-- Add anything Claude Code specific that other agents don't need -->
-
-<!-- rtk-instructions v2 -->
-# RTK (Rust Token Killer) - Token-Optimized Commands
-
-## Golden Rule
-
-**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
-
-**Important**: Even in command chains with `&&`, use `rtk`:
-```bash
-# ❌ Wrong
-git add . && git commit -m "msg" && git push
-
-# ✅ Correct
-rtk git add . && rtk git commit -m "msg" && rtk git push
-```
-
-## RTK Commands by Workflow
-
-### Build & Compile (80-90% savings)
-```bash
-rtk cargo build         # Cargo build output
-rtk cargo check         # Cargo check output
-rtk cargo clippy        # Clippy warnings grouped by file (80%)
-rtk tsc                 # TypeScript errors grouped by file/code (83%)
-rtk lint                # ESLint/Biome violations grouped (84%)
-rtk prettier --check    # Files needing format only (70%)
-rtk next build          # Next.js build with route metrics (87%)
-```
-
-### Test (60-99% savings)
-```bash
-rtk cargo test          # Cargo test failures only (90%)
-rtk go test             # Go test failures only (90%)
-rtk jest                # Jest failures only (99.5%)
-rtk vitest              # Vitest failures only (99.5%)
-rtk playwright test     # Playwright failures only (94%)
-rtk pytest              # Python test failures only (90%)
-rtk rake test           # Ruby test failures only (90%)
-rtk rspec               # RSpec test failures only (60%)
-rtk test <cmd>          # Generic test wrapper - failures only
-```
-
-### Git (59-80% savings)
-```bash
-rtk git status          # Compact status
-rtk git log             # Compact log (works with all git flags)
-rtk git diff            # Compact diff (80%)
-rtk git show            # Compact show (80%)
-rtk git add             # Ultra-compact confirmations (59%)
-rtk git commit          # Ultra-compact confirmations (59%)
-rtk git push            # Ultra-compact confirmations
-rtk git pull            # Ultra-compact confirmations
-rtk git branch          # Compact branch list
-rtk git fetch           # Compact fetch
-rtk git stash           # Compact stash
-rtk git worktree        # Compact worktree
-```
-
-Note: Git passthrough works for ALL subcommands, even those not explicitly listed.
-
-### GitHub (26-87% savings)
-```bash
-rtk gh pr view <num>    # Compact PR view (87%)
-rtk gh pr checks        # Compact PR checks (79%)
-rtk gh run list         # Compact workflow runs (82%)
-rtk gh issue list       # Compact issue list (80%)
-rtk gh api              # Compact API responses (26%)
-```
-
-### JavaScript/TypeScript Tooling (70-90% savings)
-```bash
-rtk pnpm list           # Compact dependency tree (70%)
-rtk pnpm outdated       # Compact outdated packages (80%)
-rtk pnpm install        # Compact install output (90%)
-rtk npm run <script>    # Compact npm script output
-rtk npx <cmd>           # Compact npx command output
-rtk prisma              # Prisma without ASCII art (88%)
-```
-
-### Files & Search (60-75% savings)
-```bash
-rtk ls <path>           # Tree format, compact (65%)
-rtk read <file>         # Code reading with filtering (60%)
-rtk grep <pattern>      # Search grouped by file (75%). Format flags (-c, -l, -L, -o, -Z) run raw.
-rtk find <pattern>      # Find grouped by directory (70%)
-```
-
-### Analysis & Debug (70-90% savings)
-```bash
-rtk err <cmd>           # Filter errors only from any command
-rtk log <file>          # Deduplicated logs with counts
-rtk json <file>         # JSON structure without values
-rtk deps                # Dependency overview
-rtk env                 # Environment variables compact
-rtk summary <cmd>       # Smart summary of command output
-rtk diff                # Ultra-compact diffs
-```
-
-### Infrastructure (85% savings)
-```bash
-rtk docker ps           # Compact container list
-rtk docker images       # Compact image list
-rtk docker logs <c>     # Deduplicated logs
-rtk kubectl get         # Compact resource list
-rtk kubectl logs        # Deduplicated pod logs
-```
-
-### Network (65-70% savings)
-```bash
-rtk curl <url>          # Compact HTTP responses (70%)
-rtk wget <url>          # Compact download output (65%)
-```
-
-### Meta Commands
-```bash
-rtk gain                # View token savings statistics
-rtk gain --history      # View command history with savings
-rtk discover            # Analyze Claude Code sessions for missed RTK usage
-rtk proxy <cmd>         # Run command without filtering (for debugging)
-rtk init                # Add RTK instructions to CLAUDE.md
-rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
-```
-
-## Token Savings Overview
-
-| Category | Commands | Typical Savings |
-|----------|----------|-----------------|
-| Tests | vitest, playwright, cargo test | 90-99% |
-| Build | next, tsc, lint, prettier | 70-87% |
-| Git | status, log, diff, add, commit | 59-80% |
-| GitHub | gh pr, gh run, gh issue | 26-87% |
-| Package Managers | pnpm, npm, npx | 70-90% |
-| Files | ls, read, grep, find | 60-75% |
-| Infrastructure | docker, kubectl | 85% |
-| Network | curl, wget | 65-70% |
-
-Overall average: **60-90% token reduction** on common development operations.
-<!-- /rtk-instructions -->
