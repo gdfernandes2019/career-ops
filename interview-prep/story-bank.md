@@ -69,3 +69,30 @@ This file accumulates your best interview stories over time. Each evaluation (Bl
 **R (Result):** Improved system reliability through instrumentation; contributed to a post-mortem culture that systematically reduced repeat incidents.
 **Reflection:** A more formal on-call rotation and paging system would have made incident handoffs more efficient — I now treat observability and runbook documentation as first-class deliverables in any integration engagement.
 **Best for questions about:** incident response, SRE mindset, operational reliability, root cause analysis, observability, enterprise integration
+
+### [DevOps Ownership] Cisco Meraki: Full CI/CD Lifecycle with Copado
+**Source:** Report #023 — Docker — Senior Salesforce Developer
+**S (Situation):** At Cisco Meraki, the Salesforce instance had no structured release management process — deployments were ad hoc and change governance was informal, creating risk for an enterprise-scale system.
+**T (Task):** Own the Salesforce CI/CD lifecycle end to end: source control, automated deployments, environment promotion, deployment governance, and production change management.
+**A (Action):** Implemented Copado as the CI/CD platform: branch-based source control, automated deployment validation, environment promotion pipeline, production change management procedures, and technical documentation for the release process.
+**R (Result):** Structured, repeatable deployments with full audit trail; eliminated manual change deployment errors; team could ship with confidence.
+**Reflection:** Gearset implements the same DevOps principles with a different interface — the skills transfer directly. A more formal staging environment cadence would have caught environment-specific configuration issues earlier.
+**Best for questions about:** Salesforce DevOps, CI/CD, Copado, Gearset, release management, deployment governance, change management
+
+### [MuleSoft Integration Architecture] Provider IT: API Gateway for Salesforce Experience Cloud
+**Source:** Report #023 — Docker — Senior Salesforce Developer
+**S (Situation):** At Provider IT, Salesforce Experience Cloud needed to consume external services through a governed, secure API layer that did not expose internal systems directly.
+**T (Task):** Design and build a MuleSoft API Gateway layer on Anypoint Platform that exposed external services to Salesforce Experience Cloud with proper auth, routing, transformation, and error handling.
+**A (Action):** Designed REST Reverse Proxy APIs on MuleSoft API Gateway + Anypoint Platform; implemented OAuth-secured endpoints with request routing and response transformation using Spring Boot; documented the pattern for the team.
+**R (Result):** Working API layer in production serving Salesforce Experience Cloud; clean separation between internal systems and Salesforce consumer; patterns reused for subsequent integrations.
+**Reflection:** Centralized logging from day one would have accelerated integration debugging in production. I now treat observability as a first-class requirement in any API Gateway design.
+**Best for questions about:** MuleSoft, API integration, Salesforce integrations, Anypoint Platform, integration architecture, GTM systems
+
+### [CPQ and Billing Integration] Enel: Configure-Price-Quote Implementation
+**Source:** Report #023 — Docker — Senior Salesforce Developer
+**S (Situation):** Enel Energy (Energy & Utilities) needed a configure-price-quote system integrated with Salesforce and their billing platform so customer service agents could generate quotes and manage billing without leaving Salesforce.
+**T (Task):** Implement CPQ Bit2Win within Salesforce — configure product catalog, pricing rules, and quote generation workflows; integrate with the billing system.
+**A (Action):** Configured CPQ rules, product catalog, and pricing logic in Bit2Win; built the integration between Salesforce CPQ and the billing system for end-to-end quote-to-invoice flow; delivered customer service processes on top of the CPQ foundation.
+**R (Result):** Working end-to-end configure-price-quote flow in production; customer service agents generated quotes and managed billing without leaving Salesforce.
+**Reflection:** CPQ projects need a dedicated data modeling phase before configuration begins — skip it and the pricing logic becomes unmaintainable as rules multiply. I now front-load a product catalog design workshop before any CPQ build.
+**Best for questions about:** CPQ, quote-to-cash, billing integration, Salesforce CPQ, configure-price-quote, ERP integration, Energy & Utilities
