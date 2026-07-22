@@ -82,7 +82,7 @@ mai 2020 - ago 2021
 ago 2015 - fev 2020
 
 - Consultoria Salesforce ponta a ponta em contas estratégicas.
-- Banco Itaú (2017): responsável pela escrita de especificações funcionais e técnicas para Sales/Service Cloud e integrações REST consumidas pelo Salesforce, atuando como ponte entre as áreas de negócio e o time técnico; posteriormente assumiu também o desenvolvimento na mesma conta.
+- Banco Itaú (2017): responsável pela escrita de especificações funcionais e técnicas para Sales/Service Cloud e integrações REST consumidas pelo Salesforce, atuando como ponte entre as áreas de negócio e o time técnico; posteriormente assumiu também o desenvolvimento como Software Engineer na mesma conta.
 - AB-InBev: liderou customização e rollout de managed package Salesforce para México, Tanzânia e Índia, coordenando com times locais e com o Salesforce Architect global da AB-InBev; entregou um MVP de Einstein Vision para o Grupo Modelo (México) como desenvolvedor responsável pela iniciativa.
 - Enel (Energia e Utilities): implementação Salesforce com CPQ Bit2Win, processos de atendimento ao cliente e integração com sistema de faturamento.
 
@@ -90,6 +90,7 @@ ago 2015 - fev 2020
 **Consultor Sênior / Gerente de Projetos**
 2000 - 2015
 
+- Comecei a arquitetar software de forma informal em Java a partir de 1997, sem título formal de arquiteto — desenvolvendo a habilidade por meio de aprendizado prático, leitura técnica, da especialização em Engenharia de Software (USP, 2003-2004) e da colaboração próxima com um pequeno grupo de colegas experientes.
 - Roche / Ministério da Saúde do Chile (2014): Product Owner em plataforma governamental de gestão de licitações públicas de saúde para o Chile, coordenando requisitos entre a autoridade pública e o time de entrega.
 - BD (Becton Dickinson) Brasil: Gerente de Projetos e líder do time Deloitte em programa de implementação tecnológica.
 - Comgás (Energia e Utilities): integração do CRM Vantive com o Cordaptix (Oracle) para operações de atendimento ao cliente na distribuição de gás.
