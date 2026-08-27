@@ -49,18 +49,45 @@ func resolveReportPath(careerOpsPath, trackerPath, link string) string {
 	return link
 }
 
+func getRepoRoot() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "."
+	}
+	current := cwd
+	for {
+		if _, err := os.Stat(filepath.Join(current, "path-resolver.mjs")); err == nil {
+			return current
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			break
+		}
+		current = parent
+	}
+	return cwd
+}
+
+func resolveTrackerPath(careerOpsPath string) string {
+	if envTracker := strings.TrimSpace(os.Getenv("CAREER_OPS_TRACKER")); envTracker != "" {
+		if filepath.IsAbs(envTracker) {
+			return filepath.Clean(envTracker)
+		}
+		return filepath.Clean(filepath.Join(getRepoRoot(), envTracker))
+	}
+	dataPath := filepath.Clean(filepath.Join(careerOpsPath, "data", "applications.md"))
+	if _, err := os.Stat(dataPath); err == nil {
+		return dataPath
+	}
+	return filepath.Clean(filepath.Join(careerOpsPath, "applications.md"))
+}
+
 // ParseApplications reads applications.md and returns parsed applications.
-// It tries both {path}/applications.md and {path}/data/applications.md for compatibility.
 func ParseApplications(careerOpsPath string) []model.CareerApplication {
-	filePath := filepath.Join(careerOpsPath, "applications.md")
+	filePath := resolveTrackerPath(careerOpsPath)
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		// Fallback: try data/ subdirectory
-		filePath = filepath.Join(careerOpsPath, "data", "applications.md")
-		content, err = os.ReadFile(filePath)
-		if err != nil {
-			return nil
-		}
+		return nil
 	}
 
 	lines := strings.Split(string(content), "\n")
@@ -656,7 +683,6 @@ func resolveTrackerColumns(lines []string) map[string]int {
 	return legacyTrackerColumns
 }
 
-// UpdateApplicationStatus updates the status of an application in applications.md.
 func UpdateApplicationStatus(careerOpsPath string, app model.CareerApplication, newStatus string) error {
 	return UpdateApplicationStatusAndNotes(careerOpsPath, app, newStatus, "")
 }
@@ -933,7 +959,9 @@ func ComputeProgressMetrics(apps []model.CareerApplication) model.ProgressMetric
 			}
 		}
 
-		if norm == "offer" {
+		// A hire proves an offer was received and accepted, so it counts here
+		// too — same reasoning as everOffer in stats.mjs's computeFunnel().
+		if norm == "offer" || norm == "hired" {
 			pm.TotalOffers++
 		}
 		if norm != "skip" && norm != "rejected" && norm != "discarded" {
@@ -947,11 +975,16 @@ func ComputeProgressMetrics(apps []model.CareerApplication) model.ProgressMetric
 
 	// Funnel: each stage counts all apps that reached at least that stage.
 	// An app in "interview" has passed through evaluated -> applied -> responded -> interview.
+	// "hired" is terminal success and proves every earlier stage (a landed job
+	// proves the offer, the interviews, the response, and the submission), so it
+	// counts into all four tiers — matching computeFunnel() in stats.mjs, the
+	// canonical funnel definition, whose docstring already describes this exact
+	// math as mirroring this function.
 	total := len(apps)
-	applied := statusCounts["applied"] + statusCounts["responded"] + statusCounts["interview"] + statusCounts["offer"] + statusCounts["rejected"]
-	responded := statusCounts["responded"] + statusCounts["interview"] + statusCounts["offer"]
-	interview := statusCounts["interview"] + statusCounts["offer"]
-	offer := statusCounts["offer"]
+	applied := statusCounts["applied"] + statusCounts["responded"] + statusCounts["interview"] + statusCounts["offer"] + statusCounts["hired"] + statusCounts["rejected"]
+	responded := statusCounts["responded"] + statusCounts["interview"] + statusCounts["offer"] + statusCounts["hired"]
+	interview := statusCounts["interview"] + statusCounts["offer"] + statusCounts["hired"]
+	offer := statusCounts["offer"] + statusCounts["hired"]
 
 	pm.FunnelStages = []model.FunnelStage{
 		{Label: "Evaluated", Count: total, Pct: 100.0},

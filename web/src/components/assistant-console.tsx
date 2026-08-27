@@ -12,8 +12,10 @@ import { usePipeline } from "@/components/pipeline/pipeline-provider";
 import { useApply } from "@/components/apply/apply-provider";
 import { useExplore } from "@/components/explore/explore-provider";
 import { WorkerCard } from "@/components/jobs/worker-card";
+import { Button } from "@/components/ui/button";
 import { dispatch, type ActionCtx, type DoneInfo } from "@/app/actions/registry";
 import { scoreNum } from "@/lib/format";
+import { pendingActOpenerStart } from "@/lib/act-envelope.mjs";
 import { cn } from "@/lib/cn";
 
 // ── message model: messages are PART arrays so a live worker card can render
@@ -71,6 +73,11 @@ function parseEnvelopes(acc: string): { complete: Env[]; hidePartialFrom: number
     }
     complete.push({ start, end: close + 2, id: m[1], argsJson: acc.slice(argsStart, close).trim() });
   }
+  // The regex above only sees an opener once its id letters AND trailing space
+  // have streamed in. Also hide a shorter trailing partial (`<<`, `<<act:sav`)
+  // so it doesn't flicker into the bubble before the space arrives (#2290-class).
+  const pending = pendingActOpenerStart(acc);
+  if (pending >= 0 && (hidePartialFrom === -1 || pending < hidePartialFrom)) hidePartialFrom = pending;
   return { complete, hidePartialFrom };
 }
 function removeRanges(s: string, cuts: [number, number][]): string {
@@ -490,12 +497,12 @@ export function AssistantConsole() {
               <div className="text-sm font-semibold tracking-tight">Assistant</div>
               <div className="text-xs text-faint">{cliId ? `via ${cliId}` : "no CLI configured"}</div>
             </div>
-            <button onClick={resetChat} className="rounded-md p-1.5 text-muted transition-colors hover:bg-surface-hover hover:text-foreground" aria-label="New chat" title="New chat">
+            <Button variant="ghost" size="icon" onClick={resetChat} className="text-muted" aria-label="New chat" title="New chat">
               <RotateCcw className="size-4" />
-            </button>
-            <button onClick={() => setOpen(false)} className="rounded-md p-1.5 text-muted transition-colors hover:bg-surface-hover hover:text-foreground" aria-label="Close assistant">
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-muted" aria-label="Close assistant">
               <X className="size-4" />
-            </button>
+            </Button>
           </header>
 
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
