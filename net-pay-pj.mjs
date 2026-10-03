@@ -24,6 +24,8 @@
  *      node net-pay-pj.mjs --monthly 21500                 (monthly gross)
  *      node net-pay-pj.mjs --solve-net 17000               (hourly rate needed for a net target)
  *      Options: --hours 168  --vacation-weeks 0  --contador 0  --json
+ *               --pensao <R$/month> | --pensao-sm <minimum wages>   court-ordered child
+ *               support: deducted from the pro-labore IRRF base (not from INSS or DAS)
  *      node net-pay-pj.mjs --self-test
  */
 
@@ -83,9 +85,13 @@ export function inssOnProLabore(proLabore, c = CONSTANTS) {
   return Math.min(proLabore, c.inssCeiling) * c.inssRateContributor;
 }
 
-/** Monthly IRRF on a pro-labore, choosing INSS or the simplified discount (whichever is larger). */
-export function irrfOnProLabore(gross, inss, c = CONSTANTS) {
-  const base = Math.max(0, gross - Math.max(inss, c.irrfSimplifiedDiscount));
+/**
+ * Monthly IRRF on a pro-labore. Legal deductions are INSS plus court-ordered child
+ * support (pensão alimentícia); the simplified discount replaces them all, so the larger
+ * of the two is used. The Lei 15.270/2025 reducer below looks at gross income, not the base.
+ */
+export function irrfOnProLabore(gross, inss, c = CONSTANTS, pensao = 0) {
+  const base = Math.max(0, gross - Math.max(inss + pensao, c.irrfSimplifiedDiscount));
   const b = c.irrfBrackets.find((x) => base <= x.upTo);
   let tax = Math.max(0, base * b.rate - b.deduct);
   if (gross <= c.irrfZeroUpTo) tax = 0;
@@ -95,11 +101,12 @@ export function irrfOnProLabore(gross, inss, c = CONSTANTS) {
   return tax;
 }
 
-function scenario(label, anexo, table, monthlyRevenue, proLabore, contador, c) {
+function scenario(label, anexo, table, monthlyRevenue, proLabore, contador, c, pensao = 0) {
   const rbt12 = monthlyRevenue * 12;
   const das = monthlyRevenue * effectiveRate(table, rbt12);
   const inss = inssOnProLabore(proLabore, c);
-  const irrf = irrfOnProLabore(proLabore, inss, c);
+  const irrf = irrfOnProLabore(proLabore, inss, c, pensao);
+  const irrfSaved = pensao ? irrfOnProLabore(proLabore, inss, c) - irrf : 0;
   const distribution = monthlyRevenue - das - proLabore - contador;
   const net = monthlyRevenue - das - inss - irrf - contador;
   const warnings = [];
@@ -115,17 +122,18 @@ function scenario(label, anexo, table, monthlyRevenue, proLabore, contador, c) {
   return {
     label, anexo, proLabore, das, dasRate: das / monthlyRevenue, inss, irrf, contador,
     distribution, net, keptPct: net / monthlyRevenue, warnings,
+    pensao, irrfSaved, netAfterPensao: net - pensao,
   };
 }
 
 /** Both regimes for a steady monthly gross revenue; `best` is the higher net. */
-export function computeFromMonthly(monthlyRevenue, { contador = 0, constants = CONSTANTS } = {}) {
+export function computeFromMonthly(monthlyRevenue, { contador = 0, pensao = 0, constants = CONSTANTS } = {}) {
   const c = constants;
   if (!(monthlyRevenue > 0)) throw new Error('monthly revenue must be > 0');
   if (monthlyRevenue * 12 > c.simplesLimit) throw new Error('annual revenue exceeds the Simples Nacional limit (R$ 4.8M)');
   const a = scenario('Anexo III (Fator R, pro-labore ≥ 28%)', 'III', ANEXO_III, monthlyRevenue,
-    Math.max(c.minWage, c.fatorRMin * monthlyRevenue), contador, c);
-  const b = scenario('Anexo V (pro-labore at minimum wage)', 'V', ANEXO_V, monthlyRevenue, c.minWage, contador, c);
+    Math.max(c.minWage, c.fatorRMin * monthlyRevenue), contador, c, pensao);
+  const b = scenario('Anexo V (pro-labore at minimum wage)', 'V', ANEXO_V, monthlyRevenue, c.minWage, contador, c, pensao);
   const scenarios = [a, b];
   return { monthlyRevenue, scenarios, best: scenarios.reduce((x, y) => (y.net > x.net ? y : x)) };
 }
@@ -137,12 +145,12 @@ export function monthlyFromRate(rate, { hours = 168, vacationWeeks = 0 } = {}) {
 
 /** Hourly rate whose best-regime net equals `targetNet` (net is monotonic in revenue → bisection). */
 export function solveRateForNet(targetNet, opts = {}) {
-  const { hours = 168, vacationWeeks = 0, contador = 0 } = opts;
+  const { hours = 168, vacationWeeks = 0, contador = 0, pensao = 0 } = opts;
   let lo = 1;
   let hi = 4_800_000 / 12;
   for (let i = 0; i < 100; i++) {
     const mid = (lo + hi) / 2;
-    if (computeFromMonthly(mid, { contador }).best.net < targetNet) lo = mid;
+    if (computeFromMonthly(mid, { contador, pensao }).best.net < targetNet) lo = mid;
     else hi = mid;
   }
   const monthly = (lo + hi) / 2;
@@ -163,6 +171,10 @@ function printResult(result, header) {
     if (s.contador) console.log(`    Contador             ${brl(s.contador)}`);
     console.log(`    Distribuição lucros  ${brl(s.distribution)}`);
     console.log(`    NET take-home        ${brl(s.net)}  (${pct(s.keptPct)} of gross)`);
+    if (s.pensao) {
+      console.log(`    Child support paid   ${brl(s.pensao)}  (deducted from IRRF base; IRRF saved ${brl(s.irrfSaved)})`);
+      console.log(`    NET after child supp ${brl(s.netAfterPensao)}`);
+    }
     for (const w of s.warnings) console.log(`    ⚠ ${w}`);
   }
 }
@@ -174,7 +186,7 @@ function parseArgs(argv) {
     if (!Number.isFinite(v) || v < 0) throw new Error(`${flag} needs a non-negative number`);
     return v;
   };
-  for (const f of ['--rate', '--monthly', '--solve-net', '--hours', '--vacation-weeks', '--contador']) {
+  for (const f of ['--rate', '--monthly', '--solve-net', '--hours', '--vacation-weeks', '--contador', '--pensao', '--pensao-sm']) {
     if (argv.includes(f)) out[f.slice(2).replace(/-(\w)/g, (_, ch) => ch.toUpperCase())] = num(f);
   }
   out.json = argv.includes('--json');
@@ -184,12 +196,14 @@ function parseArgs(argv) {
 function main(argv) {
   const o = parseArgs(argv);
   const opts = { hours: o.hours, vacationWeeks: o.vacationWeeks };
+  // Court-ordered child support, in R$ (--pensao) or in minimum wages (--pensao-sm).
+  const pensao = o.pensaoSm !== undefined ? o.pensaoSm * CONSTANTS.minWage : (o.pensao ?? 0);
   const footer =
     `\nAssumptions: Simples Nacional, services CNAE with Fator R, steady revenue, no dependents, tables as of ${TABLES_AS_OF}.\n` +
     'Estimate for comparing offers — not tax advice; confirm regime/CNAE/Fator R with your contador.';
 
   if (o.solveNet !== undefined) {
-    const { monthly, rate } = solveRateForNet(o.solveNet, { ...opts, contador: o.contador });
+    const { monthly, rate } = solveRateForNet(o.solveNet, { ...opts, contador: o.contador, pensao });
     if (o.json) return console.log(JSON.stringify({ targetNet: o.solveNet, monthlyGross: monthly, hourlyRate: rate, ...opts }, null, 2));
     console.log(`To net ${brl(o.solveNet)}/month you need ≈ ${brl(monthly)} gross/month = ${brl(rate)}/hour (${o.hours}h/month, ${o.vacationWeeks} unpaid vacation weeks).${footer}`);
     return;
@@ -204,15 +218,15 @@ function main(argv) {
     monthly = o.monthly;
     header = `${brl(monthly)}/month gross`;
   } else {
-    console.error('Usage: node net-pay-pj.mjs --rate <R$/h> | --monthly <R$> | --solve-net <R$>  [--hours 168] [--vacation-weeks 0] [--contador 0] [--json]');
+    console.error('Usage: node net-pay-pj.mjs --rate <R$/h> | --monthly <R$> | --solve-net <R$>  [--hours 168] [--vacation-weeks 0] [--contador 0] [--pensao <R$> | --pensao-sm <n>] [--json]');
     process.exit(1);
   }
-  const result = computeFromMonthly(monthly, { contador: o.contador });
+  const result = computeFromMonthly(monthly, { contador: o.contador, pensao });
   if (o.json) return console.log(JSON.stringify(result, null, 2));
   printResult(result, header);
-  console.log('\nFor reference (your PJ anchors, gross → best-regime net):');
-  for (const [name, gross] of [['floor', 21500], ['target', 23500]]) {
-    console.log(`  ${name} ${brl(gross)} → ${brl(computeFromMonthly(gross, { contador: o.contador }).best.net)}`);
+  console.log('\nFor reference (your PJ anchors as of 2026-10-02, gross → best-regime net):');
+  for (const [name, gross] of [['floor (R$ 100/h)', 16800], ['target (R$ 120/h)', 20160]]) {
+    console.log(`  ${name} ${brl(gross)} → ${brl(computeFromMonthly(gross, { contador: o.contador, pensao }).best.net)}`);
   }
   console.log(footer);
 }
@@ -229,6 +243,11 @@ function selfTest() {
   near('IRRF zero at 5000', irrfOnProLabore(5000, 550), 0);
   near('IRRF reducer @6000', irrfOnProLabore(6000, 660), 380.02, 0.05);
   near('IRRF no reducer @8000', irrfOnProLabore(8000, 880), 1049.27, 0.05);
+  near('IRRF with child support 2.3 SM', irrfOnProLabore(5644.8, 620.93, CONSTANTS, 2.3 * CONSTANTS.minWage), 0);
+  near('IRRF unchanged at pensao 0', irrfOnProLabore(8000, 880, CONSTANTS, 0), 1049.27, 0.05);
+  const rp = computeFromMonthly(20_160, { pensao: 2.3 * CONSTANTS.minWage });
+  if (!(rp.best.irrfSaved > 0)) { failed++; console.log('FAIL: child support should save IRRF at R$ 20.160'); }
+  near('net after child support', rp.best.netAfterPensao, rp.best.net - 2.3 * CONSTANTS.minWage);
   const r = computeFromMonthly(18_312);
   if (r.best.anexo !== 'III') { failed++; console.log('FAIL: Anexo III should win at R$ 18.312'); }
   near('net identity', r.best.net, r.monthlyRevenue - r.best.das - r.best.inss - r.best.irrf);
